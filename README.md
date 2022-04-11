@@ -4,5 +4,5 @@
 ## JS
 ### You don't know JS
 
-1. [type] ()
+1. [type] (https://github.com/imstargit/TIL/blob/main/javascript/%E1%84%90%E1%85%A1%E1%84%8B%E1%85%B5%E1%86%B8.md)
 2. 
