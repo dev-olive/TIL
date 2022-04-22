@@ -3,6 +3,7 @@ id: part-1-overview-concepts
 title: 'Redux Essentials, Part 1: Redux Overview and Concepts'
 sidebar_label: 'Redux Overview and Concepts'
 description: 'The official Essentials tutorial for Redux: learn how to use Redux, the right way'
+
 ---
 
 import { DetailedExplanation } from '../../components/DetailedExplanation'
@@ -279,7 +280,6 @@ const addTodo = text => {
 
 - 리듀서가 이 액션에 관련이 있는지 확인하세요.
   - 만약 그렇다면, 상태 복사본을 만들고, 복사본을 새로운 값으로 업데이트하고 반환하세요.
-  
 - 그렇지 않다면, 기존 상태를 변경하지 않고 반환합니다.
 
 다음은 각 리듀서가 따라야 하는 단계를 보여주는 리듀서의 간단한 예제입니다.
@@ -301,145 +301,138 @@ function counterReducer(state = initialState, action) {
 }
 ```
 
-Reducers can use any kind of logic inside to decide what the new state should be: `if/else`, `switch`, loops, and so on.
+리듀서는 새 상태가 무엇인지 결정하기 위해 모든 종류의 내부 로직을 사용할 수 있습니다 : `if/else`, `swith`, loops 등
 
-리듀서는 
+<DetailedExplanation title="자세한 설명: '리듀서'라고 불리는 이유가 뭘까?" >
 
-<DetailedExplanation title="Detailed Explanation: Why Are They Called 'Reducers?'" >
+[`Array.reduce()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce) 메소드를 사용하면 배열의 값을 가져와서, 배열의 각 항목을 한 번에 하나씩 처리하고, 단일한 최종 결과를 반환할 수 있습니다. 이것을 "배열을 하나의 값으로 줄이는 것"이라고 생각할 수 있습니다. 
 
-The [`Array.reduce()`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce) method lets you take an array of values, process each item in the array one at a time, and return a single final result. You can think of it as "reducing the array down to one value".
+`Array.reduce()`는 배열의 각 항목에 대해 한 번 호출되는 콜백 함수를 인수로 가집니다. 여기에는 두개의 인수가 있습니다:
 
-`Array.reduce()` takes a callback function as an argument, which will be called one time for each item in the array. It takes two arguments:
+- `previousResult`: 콜백이 마지막으로 반환한 값
+- `currentItem`: 배열의 현재 항목
 
-- `previousResult`, the value that your callback returned last time
-- `currentItem`, the current item in the array
+처음 콜백이 실행될때, 사용할 수 있는 `previousResult`는 없으므로 첫 번째 `previousResult`로 사용할 초기값을 전달해야 합니다.  
 
-The first time that the callback runs, there isn't a `previousResult` available, so we need to also pass in an initial value that will be used as the first `previousResult`.
-
-If we wanted to add together an array of numbers to find out what the total is, we could write a reduce callback that looks like this:
+전체 합계가 무엇인지 알아내기 위해 숫자 배열을 더하고 싶다면, 아래와 같은 reduce 콜백을 작성할 수 있습니다. 
 
 ```js
 const numbers = [2, 5, 8]
-
-const addNumbers = (previousResult, currentItem) => {
-  console.log({ previousResult, currentItem })
-  return previousResult + currentItem
+const numbers = (previousResult, currentItem) => {
+    console.log({previousResult, currentItem})
+    return previousResutl + currentItem
 }
 
 const initialValue = 0
-
 const total = numbers.reduce(addNumbers, initialValue)
 // {previousResult: 0, currentItem: 2}
 // {previousResult: 2, currentItem: 5}
 // {previousResult: 7, currentItem: 8}
 
-console.log(total)
-// 15
+console.log(total) //1 15
 ```
 
-Notice that this `addNumbers` "reduce callback" function doesn't need to keep track of anything itself. It takes the `previousResult` and `currentItem` arguments, does something with them, and returns a new result value.
+이 `addNumbers` 리듀서 콜백 함수는 자체적으로 아무것도 추적할 필요가 없다는 것에 주목하세요. `previousResult`와 `currentItem` 인수를 사용하여 작업을 수행하고 새로운 결과 값을 반환합니다.
 
-**A Redux reducer function is exactly the same idea as this "reduce callback" function!** It takes a "previous result" (the `state`), and the "current item" (the `action` object), decides a new state value based on those arguments, and returns that new state.
+**Redux 리듀서 함수는 이 "리듀서 콜백"함수와 정확히 같은 개념입니다!** "이전 결과"(`state`)와 "현재 항목"(`action` 객체)을 사용하여, 해당 인수를 바탕으로 새 상태 값을 결정하고 새 상태를 반환합니다.
 
-If we were to create an array of Redux actions, call `reduce()`, and pass in a reducer function, we'd get a final result the same way:
+Redux 액션의 새로운 배열을 생성하고 `reduce()`를 호출 후 리듀서 함수에 전달하면, 같은 방식으로 최종 결과를 얻을 수 있습니다:
 
 ```js
 const actions = [
-  { type: 'counter/increment' },
-  { type: 'counter/increment' },
-  { type: 'counter/increment' }
+    { type: 'counter/increment' },
+    { type: 'counter/increment' },
+    { type: 'counter/increment' }
 ]
 
-const initialState = { value: 0 }
+const initialState  = { value: 0 }
 
 const finalResult = actions.reduce(counterReducer, initialState)
-console.log(finalResult)
-// {value: 3}
+console.log(finalResult) // {value: 3}
 ```
 
-We can say that **Redux reducers reduce a set of actions (over time) into a single state**. The difference is that with `Array.reduce()` it happens all at once, and with Redux, it happens over the lifetime of your running app.
+**Redux 리듀서는 (시간에 지남에 따라) 일련의 액션을 단일 상태로 줄인다고 할 수 있습니다.** 차이점은 `Array.reduce()`에서는 모든 것이 한번에 일어나고, Redux에서는 실행중인 앱의 생명주기동안 일어난다는 것입니다.
 
 </DetailedExplanation>
 
 #### Store
 
-The current Redux application state lives in an object called the **store** .
+현재 Redux 애플리케이션 상태는`저장소(store)`라는 객체에 있습니다. 
 
-The store is created by passing in a reducer, and has a method called `getState` that returns the current state value:
+이 store는 리듀서를 전달하며 생성되고, 현재 상태 값을 반환하는 `getState`라는 메소드를 가집니다.
 
 ```js
 import { configureStore } from '@reduxjs/toolkit'
 
 const store = configureStore({ reducer: counterReducer })
 
-console.log(store.getState())
-// {value: 0}
+console.log(store.getState()) // {value: 0}
 ```
 
 #### Dispatch
 
-The Redux store has a method called `dispatch`. **The only way to update the state is to call `store.dispatch()` and pass in an action object**. The store will run its reducer function and save the new state value inside, and we can call `getState()` to retrieve the updated value:
+Redux store는 `dispatch`라는 메소드를 가집니다. **상태를 업데이트하는 유일한 방법은 `store.dispatch()`를 호출하고 액션 객체를 전달하는 것입니다.** store는 리듀서 함수를 실행하고 내부의 새 상태 값을 저장하고 업데이트된 값을 찾기 위해 `getState()`를 호출할 수 있습니다.
 
 ```js
 store.dispatch({ type: 'counter/increment' })
 
-console.log(store.getState())
-// {value: 1}
+console.log(store.getState()) // {value: 1}
 ```
 
-**You can think of dispatching actions as "triggering an event"** in the application. Something happened, and we want the store to know about it. Reducers act like event listeners, and when they hear an action they are interested in, they update the state in response.
+**애플리케이션에서 디스패치 작업을 "이벤트 트리거"로 생각할 수 있습니다.** 어떤 일이 발생하면 저장소가 그것에 대해 알기를 원합니다. 리듀서는 이벤트 리스너와 같은 역할을 하며 관심있어 하는 액션을 들을 때, 응답되는 상태를 업데이트 합니다.
 
-We typically call action creators to dispatch the right action:
+일반적으로 올바른 액션을 전달하기 위해 액션 생성자를 호출합니다.
 
 ```js
 const increment = () => {
-  return {
-    type: 'counter/increment'
-  }
+    return {
+        type: 'counter/increment'
+    }
 }
 
 store.dispatch(increment())
 
-console.log(store.getState())
-// {value: 2}
+console.log(store.getState()) // {value: 2}
 ```
 
 #### Selectors
 
-**Selectors** are functions that know how to extract specific pieces of information from a store state value. As an application grows bigger, this can help avoid repeating logic as different parts of the app need to read the same data:
+**Selector(선택자)**는 저장소 상태 값에서 특정 정보를 추출하는 방법을 아는 함수입니다. 애플리케이션이 커지면, 앱의 다른 부분이 같은 데이터를 읽어야 하므로 반복되는 로직을 방지하는 데 도움이 됩니다:
 
 ```js
 const selectCounterValue = state => state.value
 
 const currentValue = selectCounterValue(store.getState())
-console.log(currentValue)
-// 2
+console.log(currentValue) // 2
 ```
 
 ### Redux Application Data Flow
 
-Earlier, we talked about "one-way data flow", which describes this sequence of steps to update the app:
+앞서, 앱을 업데이트하는 일련의 단계를 설명하는 "단방향 데이터 흐름"에 대해 알아봤습니다.
 
-- State describes the condition of the app at a specific point in time
-- The UI is rendered based on that state
-- When something happens (such as a user clicking a button), the state is updated based on what occurred
-- The UI re-renders based on the new state
+- 상태는 특정 시점의 앱의 상태를 설명합니다.
 
-For Redux specifically, we can break these steps into more detail:
+- UI는 해당 상태를 기반으로 렌더링됩니다.
+- 사용자가 버튼을 클릭하는 것과 같이 어떤 작업이 발생하면, 상태는 발생한 상황에 따라 업데이트됩니다.
+- UI는 새로운 상태에 기반해 재렌더링됩니다.
 
-- Initial setup:
-  - A Redux store is created using a root reducer function
-  - The store calls the root reducer once, and saves the return value as its initial `state`
-  - When the UI is first rendered, UI components access the current state of the Redux store, and use that data to decide what to render. They also subscribe to any future store updates so they can know if the state has changed.
-- Updates:
-  - Something happens in the app, such as a user clicking a button
-  - The app code dispatches an action to the Redux store, like `dispatch({type: 'counter/increment'})`
-  - The store runs the reducer function again with the previous `state` and the current `action`, and saves the return value as the new `state`
-  - The store notifies all parts of the UI that are subscribed that the store has been updated
-  - Each UI component that needs data from the store checks to see if the parts of the state they need have changed.
-  - Each component that sees its data has changed forces a re-render with the new data, so it can update what's shown on the screen
+특히 Redux에서는, 이 단계를 더 자세히 나눌 수 있습니다:
+
+- 초기 설정: 
+  - 루트 리듀서 함수를 사용하여 Redux store가 생성됩니다.
+  - store는 루트 리듀서를 한번 호출하고, 반환값을  초기`state(상태)`로 저장합니다.
+  - UI가 처음 렌더링되면, UI 구성요소는 Redux store의 현재 상태에 접근하고, 해당 데이터를 사용하여 렌더링할 항목을 결정합니다. 또한 향후 store 업데이트를 주기적으로 받아(subscribed), 상태가 변경되었는지 알 수 있습니다.
+- 업데이트:
+  - 사용자가 버튼을 클릭하는 것과 같이, 앱에서 작업이 발생합니다.
+  - 앱 코드는 액션(작업)을 다음과 같이 Redux store에 전달합니다. `dispatch({type: 'counter/increment'})`
+  - store는 이전 `상태(state)`와 현재`작업(action)`으로 리듀서 함수를 다시 실행하고, 반환 값을 새 `상태(state)`로 저장합니다.
+  - store는 구독된(subscribed) UI의 모든 부분에 store가 업데이트 되었음을 알립니다.
+  - store의 데이터가 필요한 각각의 UI 구성요소는 필요한 상태의 부분이 변경되었는지 체크합니다.
+  - 데이터가 변경된 각각의 구성요소는 새 데이터로 강제로 리렌더링되므로, 화면에 표시된 내용을 업데이트 할 수 있습니다.
 
 Here's what that data flow looks like visually:
+
+데이터 흐름을 시각적으로 보여준 것입니다:
 
 ![Redux data flow diagram](/img/tutorials/essentials/ReduxDataFlowDiagram.gif)
 
@@ -447,25 +440,27 @@ Here's what that data flow looks like visually:
 
 Redux does have a number of new terms and concepts to remember. As a reminder, here's what we just covered:
 
-:::tip Summary
+Redux에는 기억해야 할 새로운 용어와 개념들이 많습니다. 방금 다룬 내용은 다음과 같습니다.
 
-- **Redux is a library for managing global application state**
-  - Redux is typically used with the React-Redux library for integrating Redux and React together
-  - Redux Toolkit is the recommended way to write Redux logic
-- **Redux uses a "one-way data flow" app structure**
-  - State describes the condition of the app at a point in time, and UI renders based on that state
-  - When something happens in the app:
-    - The UI dispatches an action
-    - The store runs the reducers, and the state is updated based on what occurred
-    - The store notifies the UI that the state has changed
-  - The UI re-renders based on the new state
-- **Redux uses several types of code**
-  - _Actions_ are plain objects with a `type` field, and describe "what happened" in the app
-  - _Reducers_ are functions that calculate a new state value based on previous state + an action
-  - A Redux _store_ runs the root reducer whenever an action is _dispatched_
+:::tip 요약
+
+- **Redux는 전역 애플리케이션 상태를 관리하기 위한 라이브러리입니다.** 
+  - Redux는 일반적으로 Reudx와 React를 통합하기 위해 React-Redux 라이브러리와 함께 사용됩니다. 
+  - Redux Toolkit은 Redux 로직을 작성하는데 권장되는 방법입니다. 
+- **Redux는 "단방향 데이터 흐름" 앱 구조를 사용합니다.**
+  - State는 특정 시점에서의 앱의 상태를 설명하고, UI는 그 상태를 기반으로 렌더링됩니다.
+  - 앱에 어떤 일이 발생(작동)하면: 
+    - UI가 액션을 전달합니다. 
+    - store는 리듀서를 실행하고 상태는 발생한 일에 따라 업데이트 됩니다. 
+    - store는 상태가 변경되었음을 UI에 알립니다.
+  - UI는 새로운 상태에 기반해 재렌더링됩니다.
+- **Redux는 여러 유형의 코드를 사용합니다. **
+  - _액션(Action)_ 은 `type`필드가 있는 일반 객체이며, 앱에서 "발생한 일"을 설명합니다. 
+  - _리듀서(Reducer)_는 이전 상태 + 액션을 기반으로 새로운 상태 값을 계산하는 함수입니다. 
+  - Redux _store_는 액션이 _전달(dispatch)_될 때마다 루트 리듀서를 실행합니다.
 
 :::
 
 ## What's Next?
 
-We've seen each of the individual pieces of a Redux app. Next, continue on to [Part 2: Redux App Structure](./part-2-app-structure.md), where we'll look at a full working example to see how the pieces fit together.
+Redux app의 각각 개별 부분을 살펴보았습니다. 다음으로 [Part 2: Redux App Structure](./part-2-app-structure.md)로 이어집니다. 여기서 조각들이 어떻게 맞는지 보기위해 전체 작동 예제를 살펴볼 것입니다.
